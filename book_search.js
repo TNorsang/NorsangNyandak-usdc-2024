@@ -131,10 +131,10 @@ if (test2result.Results.length == 1) {
  * This function has no parameters.
  * This function has no return value .
  * */
-function isSearchTermAString() {
+function isSearchTermAString(searchTerm, scannedTextObj) {
   const searchTermResult = findSearchTermInBooks(
-    true,
-    twentyLeaguesIn
+    searchTerm,
+    scannedTextObj
   ).SearchTerm;
   if (typeof searchTermResult === "string") {
     console.log("PASS: Input is a String");
@@ -150,19 +150,19 @@ function isSearchTermAString() {
  * This function has no parameters.
  * This function has no return value .
  * */
-function emptySearchTermInput() {
+function emptySearchTermInput(searchTerm, scannedTextObj) {
   const searchTermResult = findSearchTermInBooks(
-    "",
-    twentyLeaguesIn
+    searchTerm,
+    scannedTextObj
   ).SearchTerm;
   if (searchTermResult.length >= 1) {
     console.log("PASS: Has a valid String Length");
   } else {
     console.log("FAIL: String has no Characters");
-    console.log("Expected:", 1);
+    console.log("Expected: Input > 0");
     console.log("Received:", 0);
   }
 }
 
-isSearchTermAString();
-emptySearchTermInput();
+isSearchTermAString("Hello", twentyLeaguesIn);
+emptySearchTermInput("My", twentyLeaguesIn);
