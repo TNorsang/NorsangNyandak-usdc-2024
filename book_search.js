@@ -18,14 +18,25 @@
  * @param {JSON} scannedTextObj - A JSON object representing the scanned text.
  * @returns {JSON} - Search results.
  * */
+
+
 function findSearchTermInBooks(searchTerm, scannedTextObj) {
   /** You will need to implement your search and
    * return the appropriate object here. */
 
+  if (typeof searchTerm !== 'string' || searchTerm.trim() === '') {
+    throw new Error("Invalid input: searchTerm must be a non-empty string.");
+  }
+
+  // Check if scannedTextObj is an array
+  if (!Array.isArray(scannedTextObj)) {
+      throw new Error("Invalid input: scannedTextObj must be an array.");
+  }
+
   var result = {
     SearchTerm: searchTerm,
     Results: [],
-  };
+  }; 
 
   //   Result = ISBN, Page#, Line#
 
@@ -48,6 +59,8 @@ function findSearchTermInBooks(searchTerm, scannedTextObj) {
 
   return result;
 }
+
+
 
 /** Example input object. */
 const twentyLeaguesIn = [
@@ -124,45 +137,111 @@ if (test2result.Results.length == 1) {
 
 /** My Personal Unit Test Functions **/
 
-/** I decided to use functions and also clarify in a specific way what is passing or failing in the test cases. */
+// I opted for the use of functions and implemented a more specific approach to indicate whether the test cases are passing or failing.
 
 /**
- * Checks if searchTerm is a string.
- * This function has no parameters.
- * This function has no return value .
- * */
-function isSearchTermAString(searchTerm, scannedTextObj) {
-  const searchTermResult = findSearchTermInBooks(
-    searchTerm,
-    scannedTextObj
-  ).SearchTerm;
-  if (typeof searchTermResult === "string") {
-    console.log("PASS: Input is a String");
-  } else {
-    console.log("FAIL: Input is not a String");
-    console.log("Expected:", "String");
-    console.log("Received:", typeof searchTermResult);
+ * Tests whether 'isInputEmptyOrString' correctly handles inputs with an empty string or non-string parameters.
+ *
+ * @param {string} searchTerm - The lower case word or term to search for in the scanned text.
+ * @param {JSON} scannedTextObj - A JSON object within an array representing the scanned text.
+ * @returns {void} - The function does not return a value but logs the test result to the console.
+ */
+
+function isInputEmptyOrString(searchTerm, scannedTextObj) {
+  try {
+    findSearchTermInBooks(searchTerm, scannedTextObj);
+    console.log("Fail: Did not catch non-string or empty string input.");
+  } catch (error) {
+    if (error.message === "Invalid input: searchTerm must be a non-empty string.") {
+      console.log("Pass: Successfully caught a non-string or empty string input.");
+    } else {
+      console.log("Fail: Incorrect error message for non-string or empty string input.");
+      console.log("Expected error message: 'Invalid input: searchTerm must be a non-empty string.'");
+      console.log("Received error message:", error.message);
+    }
   }
 }
 
+// Testing the Unit Test 'isInputEmptyOrString'.
+isInputEmptyOrString('', twentyLeaguesIn);
+
+
 /**
- * Checks if Input String SearchTerm has characters.
- * This function has no parameters.
- * This function has no return value .
- * */
-function emptySearchTermInput(searchTerm, scannedTextObj) {
-  const searchTermResult = findSearchTermInBooks(
-    searchTerm,
-    scannedTextObj
-  ).SearchTerm;
-  if (searchTermResult.length >= 1) {
-    console.log("PASS: Has a valid String Length");
-  } else {
-    console.log("FAIL: String has no Characters");
-    console.log("Expected: Input > 0");
-    console.log("Received:", 0);
+ * Tests whether 'caseSensitiveTest' correctly handles inputs with different text cases.
+ *
+ * @param {string} lowerCaseWord - The lower case word or term to search for in the scanned text.
+ * @param {string} upperCaseWord - The upper case word or term to search for in the scanned text.
+ * @param {JSON} scannedTextObj - A JSON object representing the scanned text.
+ * @returns {void} - The function does not return a value but logs the test result to the console.
+ */
+function caseSensitiveTest(lowerCaseWord, upperCaseWord, scannedTextObj) {
+  const resultCapitalized = findSearchTermInBooks(upperCaseWord, scannedTextObj);
+  const resultLowercase = findSearchTermInBooks(lowerCaseWord, scannedTextObj);
+
+  let pass = true;
+
+  for (let capitalizedResult of resultCapitalized.Results) {
+    if (resultLowercase.Results.some(lowercaseResult => 
+        lowercaseResult.ISBN === capitalizedResult.ISBN && 
+        lowercaseResult.Page === capitalizedResult.Page && 
+        lowercaseResult.Line === capitalizedResult.Line)) {
+      pass = false;
+      break;
+    }
+
+    if (pass) {
+      console.log("PASS: Case-sensitive Test");
+    } else {
+      console.log("FAIL: Case-sensitive Test");
+      console.log("Found overlapping results for 'The' and 'the'.");
+    }
   }
 }
 
-isSearchTermAString("Hello", twentyLeaguesIn);
-emptySearchTermInput("My", twentyLeaguesIn);
+// Testing the Unit Test 'caseSensitiveTest'.
+caseSensitiveTest('the','The', twentyLeaguesIn);
+
+
+/**
+ * Tests whether 'testForNonExistentTerm' correctly handles inputs with no result.
+ *
+ * @param {string} searchTerm - The word or term to search for in the scanned text.
+ * @param {JSON} scannedTextObj - A JSON object within an array representing the scanned text.
+ * @returns {void} - The function does not return a value but logs the test result to the console.
+ */
+
+function testForNonExistentTerm(searchTerm, scannedTextObj) {
+  const result = findSearchTermInBooks(searchTerm, scannedTextObj);
+  if (result.Results.length === 0) {
+    console.log(`PASS: No results found for '${searchTerm}'`);
+  } else {
+    console.log(`FAIL: Should have no results for '${searchTerm}'`);
+    console.log("Expected 0 matches, found:", result.Results.length);
+  }
+}
+
+// Testing the Unit Test 'testForNonExistentTerm'.
+testForNonExistentTerm("abc123", twentyLeaguesIn);
+
+/**
+ * Tests whether 'testMultipleOccurrences' correctly handles inputs with multiple results.
+ *
+ * @param {string} searchTerm - The word or term to search for in the scanned text.
+ * @param {JSON} scannedTextObj - A JSON object within an array representing the scanned text.
+ * @param {number} expectedCount - The expected count for the search term.
+ * @returns {void} - The function does not return a value but logs the test result to the console.
+ */
+
+function testMultipleOccurrences(searchTerm, scannedTextObj, expectedCount) {
+  const result = findSearchTermInBooks(searchTerm, scannedTextObj);
+  if (result.Results.length === expectedCount) {
+    console.log(`PASS: Multiple occurrences test for '${searchTerm}'`);
+  } else {
+    console.log(`FAIL: Multiple occurrences test for '${searchTerm}'`);
+    console.log("Expected count:", expectedCount);
+    console.log("Actual count:", result.Results.length);
+  }
+}
+
+// Testing the Unit Test 'testMultipleOccurrences'.
+testMultipleOccurrences("and", twentyLeaguesIn, 2);
